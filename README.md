@@ -5,8 +5,15 @@
  - Ubuntu22.04.1 LTS
  - ROS2 Humble
  - OPENCV 4.5.4
- 
- 
+
+ ```
+$ sudo vi /etc/udev/rules.d/defined_lidar.rules
+KERNEL=="ttyACM*", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740", MODE:="0777",SYMLINK+="ttyLidar"
+
+$ service udev reload
+$ service udev restart
+ ```
+
 2. Build NSL-2206AA demo
 ```
 $ cd NSL2206_driver
