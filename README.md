@@ -21,19 +21,20 @@ $ ros2 launch roboscan_nsl2206 camera.Launch.py
 
 ```
 
+# NSL-3130AA View
+![Screenshot from 2023-07-17 14-40-06](https://github.com/nano-roboscan/NSL-2206AA-ROS2/assets/106071093/9f048a4f-2750-4410-adcc-f7c7a7c1f21c)
+
+
 # Set parameters
 ```
 $ rqt
  (reconfigure)
 ```
+![Screenshot from 2023-07-17 14-39-31](https://github.com/nano-roboscan/NSL-2206AA-ROS2/assets/106071093/aa9568cc-a2ae-482d-9b01-79f4bfa5c3af)
+
 
 
 cvShow : Image Viewer on/off
-channel : 0 ~ 15
-
-hdr_mode 0 : HDR off
-hdr_mode 1 : Spatial HDR
-hdr_mode 2 : Temperal HDR
 
 imageType 0 : Grayscale 
 imageType 1 : Distance 
