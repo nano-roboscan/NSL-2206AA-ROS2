@@ -82,7 +82,7 @@ using namespace cv;
 struct Settings{
 
   int imageType = 1;
-  bool startStream = false;
+  bool startStream = true;
   bool triggerSingleShot = false;
   bool runVideo= false;
   bool updateParam = false;
@@ -122,7 +122,7 @@ struct Settings{
   double maxDistance = 7500;
   double maxAmplitude = 2890;
 
-  bool cvShow = false;
+  bool cvShow = true;
 
   	
   ComLib::Nsl2206Image::Nsl2206ImageType_e iType;
