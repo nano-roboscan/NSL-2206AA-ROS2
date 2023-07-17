@@ -36,16 +36,22 @@ $ rqt
 
 cvShow : Image Viewer on/off
 
-imageType 0 : Grayscale 
+
+imageType 0 : Grayscale
+
 imageType 1 : Distance 
+
 imageType 2 : Distance / Amplitude
+
 imageType 4 : Distance / Grayscale
+
 
 integrationTime0 = 0 ~ 1000(VCSEL)
 
 integrationTime0 = 0 ~ 10000
 
 modIndex 0 : 10MHz
+
 modIndex 1 : 20MHz
 
 
