@@ -4,6 +4,7 @@
 #include "roboscan_nsl2206_image.h"
 #include "communication_2206.h"
 #include "camera_calibration.h"
+#include "HdrHandler.h"
 
 //#include <dynamic_reconfigure/server.h>
 //#include <roboscan_nsl2206/roboscan_nsl2206h>
@@ -74,6 +75,15 @@
 #include <cstdlib>
 #include <unistd.h>
 
+//image_transport::Publisher imagePublisher;
+#define WIN_NAME 					"LiDAR"
+//#define  MAX_LEVELS  9
+//#define NUM_COLORS     		30000
+#define NUM_INTEGRATION_TIME_3D 	6
+
+
+
+
 //#include <image_transport/image_transport.h>
 
 using std::vector;
@@ -123,8 +133,12 @@ struct Settings{
   double maxAmplitude = 2890;
 
   bool cvShow = true;
+  int numHdr = 0;
+  int numIntegrationTime = 0;
+  int integrationTime3d[NUM_INTEGRATION_TIME_3D] = {0, };
+  int integrationDistance[NUM_INTEGRATION_TIME_3D][160*60] = {0, };
+  int integartionAmplitude[NUM_INTEGRATION_TIME_3D][160*60] = {0, };
 
-  	
   ComLib::Nsl2206Image::Nsl2206ImageType_e iType;
 
 };
@@ -138,8 +152,6 @@ public:
     roboscanPublisher();
     ~roboscanPublisher();
 
-
-   
     int image_type = 1;
     int mode = 0; // 0 10MHz
     int integration_time_0 = 500;
@@ -252,6 +264,7 @@ private:
     CameraCalibration cameraCalibration;
     ComLib::Communication2206 communication;
     std_msgs::msg::Int32MultiArray imageHeaderMsg;
+	HdrHandler2206 hdrHandler;
 
 	vector<Vec3b> colorVector;
 

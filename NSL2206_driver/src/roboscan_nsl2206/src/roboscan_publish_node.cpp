@@ -52,10 +52,7 @@
 using namespace ComLib;
 using namespace std;
 
-//image_transport::Publisher imagePublisher;
-#define WIN_NAME "LiDAR"
-//#define  MAX_LEVELS  9
-//#define NUM_COLORS     		30000
+
 
 std::atomic<int> x_start = -1, y_start = -1;
 
@@ -261,6 +258,10 @@ rcl_interfaces::msg::SetParametersResult roboscanPublisher::parametersCallback( 
 		{
 			lidarParam.cvShow= param.as_bool();
 		}
+		else if (param.get_name() == "1. numHdr")
+		{
+			lidarParam.numHdr= param.as_int();
+		}
 	}
     
 
@@ -285,7 +286,7 @@ void roboscanPublisher::parameterInit()
     default: break;
     }
 
-
+	
     lidarParam.mode = mode;
     lidarParam.integrationTimeATOF1  = integration_time_0;
     lidarParam.integrationTimeATOF2  = integration_time_1;
@@ -360,6 +361,7 @@ void roboscanPublisher::parameterInit()
 	rclcpp::Parameter pRoiBottomY("Y. roiBottomY", lidarParam.roi_bottomY);
 	rclcpp::Parameter pLensAngle("Z. lensAngle", lidarParam.angle);
 	rclcpp::Parameter pCvshow("0. cvShow", lidarParam.cvShow);
+	rclcpp::Parameter pNumhdr("1. numHdr", lidarParam.numHdr);
 	
 	this->declare_parameter<int>("A. imageType", lidarParam.iType);
 	this->declare_parameter<int>("B. modFrequency", lidarParam.modFrequency);		
@@ -389,6 +391,7 @@ void roboscanPublisher::parameterInit()
 	this->declare_parameter<int>("Y. roiBottomY", lidarParam.roi_bottomY);
 	this->declare_parameter<double>("Z. lensAngle", lidarParam.angle);
 	this->declare_parameter<bool>("0. cvShow", lidarParam.cvShow);
+	this->declare_parameter<int>("1. numHdr", lidarParam.numHdr);
 	
 
 	this->set_parameter(pImageType);
@@ -419,6 +422,8 @@ void roboscanPublisher::parameterInit()
 	this->set_parameter(pRoiBottomY);
 	this->set_parameter(pLensAngle);
 	this->set_parameter(pCvshow);
+	this->set_parameter(pNumhdr);
+	
 
 
 }
@@ -461,7 +466,6 @@ void roboscanPublisher::initialise()
     strFrameID = "roboscan_frame";
     
     cameraInfo.d.resize(8);
-
     
 
 
@@ -485,9 +489,15 @@ void roboscanPublisher::setAngle(double angle_)
 void roboscanPublisher::update()
 {
     //printf("update Start\n");
-    if(lidarParam.runVideo && !lidarParam.updateParam){;
+    if(lidarParam.runVideo && !lidarParam.updateParam){
+		std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now();
         roboscanPublisher::updateData(); //streaming
-    }else if(lidarParam.updateParam){
+        std::chrono::time_point<std::chrono::system_clock> endTime = std::chrono::system_clock::now();
+		float milliSecond = (float)(std::chrono::duration_cast<std::chrono::milliseconds>(endTime-startTime).count())/1000;
+		float fps = 1/milliSecond;
+		//printf("fps : %.1f\n", fps);
+		
+	}else if(lidarParam.updateParam){
         roboscanPublisher::setParameters(); //update parameters
 
         if(lidarParam.triggerSingleShot && lidarParam.triggerSingleShot != lastSingleShot)
@@ -536,8 +546,16 @@ void roboscanPublisher::setParameters()
         communication.setIntegrationTime3d(3, lidarParam.integrationTimeATOF4);
         communication.setIntegrationTime3d(4, lidarParam.integrationTimeBTOF1);
         communication.setIntegrationTimeGrayscale(lidarParam.integrationTimeGray);
-        
-        setAngle(lidarParam.angle);
+
+		lidarParam.integrationTime3d[0] = lidarParam.integrationTimeATOF1;		
+		lidarParam.integrationTime3d[1] = lidarParam.integrationTimeATOF2;		
+		lidarParam.integrationTime3d[2] = lidarParam.integrationTimeATOF3;
+		lidarParam.integrationTime3d[3] = lidarParam.integrationTimeATOF4;
+		lidarParam.integrationTime3d[4] = lidarParam.integrationTimeBTOF1;
+		lidarParam.integrationTime3d[5] = lidarParam.integrationTimeGray;
+
+		
+		setAngle(lidarParam.angle);
 
         if(lidarParam.modFrequency == 0) communication.setModulationFrequency( ModulationFrequency_e::MODULATION_FREQUENCY_10MHZ);
         else communication.setModulationFrequency(ModulationFrequency_e::MODULATION_FREQUENCY_20MHz);
@@ -559,8 +577,22 @@ void roboscanPublisher::setParameters()
         communication.setFilter(lidarParam.kalmanThreshold, (uint)(lidarParam.kalmanFactor*1000.0));
 		communication.setRoi((unsigned int)lidarParam.roi_leftX, (unsigned int)lidarParam.roi_topY, (unsigned int)lidarParam.roi_rightX, (unsigned int)lidarParam.roi_bottomY);
         communication.setDcsFilter(lidarParam.averageFilter);
+
 		
-        //lidarParam.runVideo = true;
+        if(lidarParam.numHdr == 1)
+			lidarParam.numHdr = 0;
+		
+        communication.setHdr(lidarParam.numHdr);
+		
+		lidarParam.numIntegrationTime = 0;
+		/*
+		for (unsigned int i = 0; i < NUM_INTEGRATION_TIME_3D; i++)
+		{
+    		if( lidarParam.integrationTime3d[i] != 0 ) 
+				lidarParam.numIntegrationTime++;
+			else break;
+    	}	
+		*/
         if(lidarParam.startStream)
         {
         	lidarParam.runVideo = true;
@@ -784,10 +816,12 @@ void roboscanPublisher::updateGrayscaleFrame(std::shared_ptr<ComLib::Nsl2206Imag
 
     
 void roboscanPublisher::updateDistanceFrame(std::shared_ptr<ComLib::Nsl2206Image> image){
-
     int x, y, i, l;
     static rclcpp::Clock s_rclcpp_clock2;
     auto data_stamp = s_rclcpp_clock2.now();
+
+	//hdrHandler.onDistanceReceived(image);
+
 
     //cv_bridge::CvImagePtr cv_ptr(new cv_bridge::CvImage);
     cv::Mat imageLidar(image->getHeight(), image->getWidth(), CV_8UC3, Scalar(255, 255, 255));
@@ -816,6 +850,7 @@ void roboscanPublisher::updateDistanceFrame(std::shared_ptr<ComLib::Nsl2206Image
         }
 
         uint16_t val = 0;
+		uint16_t hvl = 0;
 
         if(lidarParam.enableUndistortion){
 
@@ -843,20 +878,62 @@ void roboscanPublisher::updateDistanceFrame(std::shared_ptr<ComLib::Nsl2206Image
                 img16_1.data[i+1] = (val>>8) & 0xff;
             }
         }
-    
+
+	
     int p;
     for(p=0, y=0; y< (int)image->getHeight(); y++)
     {
         for(x=0; x< (int)image->getWidth(); x++, p++)
         {
-            if(lidarParam.enableUndistortion) val = outImage.at<uint16_t>(y,x);
-            else val = image->getDistanceOfPixel(p);
-            
+        	//
+            if(lidarParam.enableUndistortion)
+            {
+				val = outImage.at<uint16_t>(y,x);
+            }
+			else 
+			{
+				val = image->getDistanceOfPixel(p);
+			}
             getDistanceColor(imageLidar, x, y, val);
 			distData[((int)image->getWidth())* y + x] = val;
-        }
+			lidarParam.integrationDistance[lidarParam.numIntegrationTime][((int)image->getWidth())* y + x] = val;
+						
+		}
     }
-        
+
+	
+	if(lidarParam.numHdr == CommunicationConstants::ModeHdr::HDR_MODE_TEMPORAL)
+	{
+		for(p=0, y=0; y < (int)image->getHeight(); y++)
+    	{
+			for(x=0; x< (int)image->getWidth(); x++, p++)
+        	{
+				if(image->getNumIntegrationTimeUsed() == lidarParam.numIntegrationTime+1)
+				{
+					for (int i = 0; i < image->getNumIntegrationTimeUsed(); i++)
+					{
+						if(lidarParam.integrationDistance[i][((int)image->getWidth())* y + x] < CommunicationConstants::PixelNsl2206::LIMIT_VALID_PIXEL) 
+						{
+							val = lidarParam.integrationDistance[i][((int)image->getWidth())* y + x];
+							getDistanceColor(imageLidar, x, y, val);
+							distData[((int)image->getWidth())* y + x] = val;
+						}
+						
+					}
+				}
+			}
+		}
+	
+		lidarParam.numIntegrationTime++;
+
+		if(lidarParam.numIntegrationTime < image->getNumIntegrationTimeUsed())
+			return;
+		if(image->getNumIntegrationTimeUsed() == lidarParam.numIntegrationTime)
+			lidarParam.numIntegrationTime = 0;
+	
+	}
+
+	
     imagePublisher2->publish(img16_1);
     
     rclcpp::TimerBase::SharedPtr timer_;
@@ -963,7 +1040,9 @@ void roboscanPublisher::updateDistanceFrame(std::shared_ptr<ComLib::Nsl2206Image
 	else{
 		cv::destroyAllWindows();
 	}
+	
 	waitKey(1);
+
 }
 
 void roboscanPublisher::updateDistanceAmplitudeFrame(std::shared_ptr<Nsl2206Image> image)
@@ -971,7 +1050,7 @@ void roboscanPublisher::updateDistanceAmplitudeFrame(std::shared_ptr<Nsl2206Imag
     int x,y,i,k,l;
     static rclcpp::Clock s_rclcpp_clock3;
     auto data_stamp = s_rclcpp_clock3.now();
-    uint16_t val;
+    uint16_t val, dvl;
     cv_bridge::CvImagePtr cv_ptr(new cv_bridge::CvImage);
     cv::Mat imageLidar(image->getHeight(), image->getWidth(), CV_8UC3, Scalar(255, 255, 255));
 	cv::Mat amplitudeLidar(image->getHeight(), image->getWidth(), CV_8UC3, Scalar(255, 255, 255));
@@ -1024,22 +1103,22 @@ void roboscanPublisher::updateDistanceAmplitudeFrame(std::shared_ptr<Nsl2206Imag
                 img16_1.data[i+1] = (val>>8) & 0xff;
             }
         }
-        //printf("=====================================: %d\n", img16_1.data[0]+img16_1.data[1]);
-
-        imagePublisher3->publish(img16_1);
+		
 		int p;
 		for(p=0, y=0; y< (int)image->getHeight(); y++)
 		{
 			for(x=0; x< (int)image->getWidth(); x++, p++)
 			{
 				if(lidarParam.enableUndistortion) val = outImage.at<uint16_t>(y,x);
-				else val = image->getDistanceOfPixel(p);
+				else val = image->getAmplitudeOfPixel(p);
 
-				getAmplitudeColor(amplitudeLidar, x, y, val, 2897);
+				getAmplitudeColor(amplitudeLidar, x, y, val, 10000); //2897
 				amplData[(int)image->getWidth() * y + x] = val;
+				lidarParam.integartionAmplitude[lidarParam.numIntegrationTime][((int)image->getWidth())* y + x] = val;
 			}
 		}	
 
+        
 
 
         //img16_2.header.seq = frameSeq++;
@@ -1088,9 +1167,7 @@ void roboscanPublisher::updateDistanceAmplitudeFrame(std::shared_ptr<Nsl2206Imag
             }
         }
 
-        imagePublisher2->publish(img16_2);
-
-        
+		
         for(p=0, y=0; y< (int)image->getHeight(); y++)
         {
             for(x=0; x< (int)image->getWidth(); x++, p++)
@@ -1100,8 +1177,52 @@ void roboscanPublisher::updateDistanceAmplitudeFrame(std::shared_ptr<Nsl2206Imag
 
                 getDistanceColor(imageLidar, x, y, val);
 				distData[(int)image->getWidth() * y + x] = val;
+				lidarParam.integrationDistance[lidarParam.numIntegrationTime][((int)image->getWidth())* y + x] = val;
             }
         }   
+		
+		if(lidarParam.numHdr == CommunicationConstants::ModeHdr::HDR_MODE_TEMPORAL)
+		{
+			for(p=0, y=0; y < (int)image->getHeight(); y++)
+			{
+				for(x=0; x< (int)image->getWidth(); x++, p++)
+				{
+					if(image->getNumIntegrationTimeUsed() == lidarParam.numIntegrationTime+1)
+					{
+						for (int i = 0; i < image->getNumIntegrationTimeUsed(); i++)
+						{
+							if(lidarParam.integrationDistance[i][((int)image->getWidth())* y + x] < CommunicationConstants::PixelNsl2206::LIMIT_VALID_PIXEL) 
+							{
+								dvl = lidarParam.integartionAmplitude[i][((int)image->getWidth())* y + x];
+								val = lidarParam.integrationDistance[i][((int)image->getWidth())* y + x];
+
+								getAmplitudeColor(amplitudeLidar, x, y, dvl, 10000);
+								getDistanceColor(imageLidar, x, y, val);
+
+								amplData[((int)image->getWidth())* y + x] = dvl;
+								distData[((int)image->getWidth())* y + x] = val;								
+							}
+							
+						}
+					}
+				}
+			}
+		
+			lidarParam.numIntegrationTime++;
+		
+			if(lidarParam.numIntegrationTime < image->getNumIntegrationTimeUsed())
+				return;
+			if(image->getNumIntegrationTimeUsed() == lidarParam.numIntegrationTime)
+				lidarParam.numIntegrationTime = 0;
+		
+		}
+
+		
+		imagePublisher3->publish(img16_1);
+        imagePublisher2->publish(img16_2);
+
+        
+
         
 		rclcpp::TimerBase::SharedPtr timer_;
     	sensor_msgs::msg::Image::SharedPtr msgColor;
@@ -1326,10 +1447,8 @@ void roboscanPublisher::updateDistanceGrayscaleFrame(std::shared_ptr<Nsl2206Imag
             }
         }
 
-        imagePublisher2->publish(img16_2);
 
-        
-        for(p=0, y=0; y< (int)image->getHeight(); y++)
+		for(p=0, y=0; y< (int)image->getHeight(); y++)
         {
             for(x=0; x< (int)image->getWidth(); x++, p++)
             {
@@ -1338,8 +1457,44 @@ void roboscanPublisher::updateDistanceGrayscaleFrame(std::shared_ptr<Nsl2206Imag
 
                 getDistanceColor(imageLidar, x, y, val);
 				distData[(int)image->getWidth() * y + x] = val;
+				lidarParam.integrationDistance[lidarParam.numIntegrationTime][((int)image->getWidth())* y + x] = val;
             }
         }
+
+		if(lidarParam.numHdr == CommunicationConstants::ModeHdr::HDR_MODE_TEMPORAL)
+		{
+			for(p=0, y=0; y < (int)image->getHeight(); y++)
+			{
+				for(x=0; x< (int)image->getWidth(); x++, p++)
+				{
+					if(image->getNumIntegrationTimeUsed() == lidarParam.numIntegrationTime+1)
+					{
+						for (int i = 0; i < image->getNumIntegrationTimeUsed(); i++)
+						{
+							if(lidarParam.integrationDistance[i][((int)image->getWidth())* y + x] < CommunicationConstants::PixelNsl2206::LIMIT_VALID_PIXEL) 
+							{
+								val = lidarParam.integrationDistance[i][((int)image->getWidth())* y + x];
+								getDistanceColor(imageLidar, x, y, val);
+								distData[((int)image->getWidth())* y + x] = val;
+							}
+							
+						}
+					}
+				}
+			}
+		
+			lidarParam.numIntegrationTime++;
+		
+			if(lidarParam.numIntegrationTime < image->getNumIntegrationTimeUsed())
+				return;
+			if(image->getNumIntegrationTimeUsed() == lidarParam.numIntegrationTime)
+				lidarParam.numIntegrationTime = 0;
+		
+		}
+		
+        imagePublisher2->publish(img16_2);
+
+        
         
 		rclcpp::TimerBase::SharedPtr timer_;
     	sensor_msgs::msg::Image::SharedPtr msgColor;

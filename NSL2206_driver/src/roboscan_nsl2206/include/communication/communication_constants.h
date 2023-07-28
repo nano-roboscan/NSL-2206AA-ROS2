@@ -73,7 +73,8 @@ namespace CommunicationConstants
     const uint8_t COMMAND_SET_DCS_FILTER = 0x0A;                               ///<Command to set the DCS filter
     const uint8_t COMMAND_SET_GAUSSIAN_FILTER = 0x0B;                          ///<Command to set the Gaussian filter
     const uint8_t COMMAND_SET_FRAME_RATE = 0x0C;                               ///<Command to set/limit the frame rate
-
+	const uint8_t COMMAND_SET_HDR = 0x0D;  
+	
     //acquisition commands
     const uint8_t COMMAND_GET_DISTANCE = 0x20;                                 ///<Command to request distance data
     const uint8_t COMMAND_GET_AMPLITUDE = 0x21;                                ///<Command to request amplitude data
@@ -255,8 +256,16 @@ namespace CommunicationConstants
     const uint32_t MASK_DCS_FILTER = 0x4;
     const uint32_t MASK_GAUSSIAN_FILTER = 0x8;
     const uint32_t MASK_COMPENSATED = 0x10;
+	const uint32_t MASK_SPATIAL_HDR = 0x80;
+	const uint32_t MASK_TEMPORAL_HDR = 0x100;
+	
   }
-
+  namespace ModeHdr
+  {
+  	const uint32_t HDR_MODE_NONE = 0;
+	const uint32_t HDR_MODE_SPATIAL = 1;
+	const uint32_t HDR_MODE_TEMPORAL = 2;
+  }
   namespace Amplitude
       {
       const uint32_t INDEX_INDEX = 2;                                          ///<Index of the index

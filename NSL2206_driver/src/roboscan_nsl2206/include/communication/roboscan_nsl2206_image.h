@@ -42,6 +42,9 @@ class HeaderFlags
     bool getAutoModulationEnabled() const;
     bool getAutoIntegrationTimeEnabled() const;
     bool getDcsFilterEnabled() const;
+	
+	bool getTemporalHdrEnabled() const;	
+	bool getSpatialHdrEnabled() const;
     bool getGaussianFilterEnabled() const;
     bool getCompensated() const;
 
@@ -54,6 +57,9 @@ class HeaderFlags
     bool averageFilterEnabled;
     bool gaussianFilterEnabled;
     bool compensated;
+    bool temporalHdrEnabled;
+    bool spatialHdrEnabled;
+	
 };
 
 
@@ -75,7 +81,8 @@ class Nsl2206Image
 
     Nsl2206Image(const std::vector<uint8_t> &data);
     virtual Nsl2206ImageType_e getType() = 0;
-
+	virtual ~Nsl2206Image();
+	virtual void changePixel(Nsl2206Image &imageSource , const unsigned int index );
     //void printInfo(std::vector<std::string> &stream);
     unsigned int getNumPixel() const;
 
@@ -93,7 +100,8 @@ class Nsl2206Image
     unsigned int getCurrentIntegrationTimeGrayscale() const;
     unsigned int getIntegrationTimeGrayscale() const;
     unsigned int getIntegrationTime3d(const unsigned int index) const;
-    unsigned int getAmplitudeLimit(int index) const;
+	unsigned int getNumIntegrationTimeUsed() const;
+	unsigned int getAmplitudeLimit(int index) const;
     int getOffset() const;
     unsigned int getBinningType() const;
     HeaderModulationSettings getModulation() const;
@@ -120,6 +128,8 @@ class Nsl2206Image
     double getFirmwareRelease() const;
     uint16_t getFirmwareVersion() const;
     static bool getPixelIsInvalid(const unsigned int value);
+	std::vector<uint8_t> &getRawData();
+
 
   protected:
     std::vector<uint8_t> data;

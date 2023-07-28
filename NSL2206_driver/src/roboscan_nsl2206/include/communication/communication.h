@@ -53,7 +53,8 @@ class Communication: public Communication_IF
     ErrorNumber_e setIntegrationTime3d(const unsigned int index, const unsigned int integrationTime);
     ErrorNumber_e setIntegrationTimeGrayscale(const unsigned int integrationTime);
     ErrorNumber_e setModulationFrequency(const ModulationFrequency_e modulationFrequency);    
-    //ErrorNumber_e setMode(const int mode __attribute__((unused))){}
+	ErrorNumber_e setHdr(const uint8_t hdr);
+	//ErrorNumber_e setMode(const int mode __attribute__((unused))){}
     ErrorNumber_e setFilter(const unsigned int threshold, const unsigned int factor);
     ErrorNumber_e setDcsFilter(const bool enabled);
     ErrorNumber_e setGaussianFilter(const bool enabled);
@@ -113,7 +114,7 @@ class Communication: public Communication_IF
     ErrorNumber_e sendCommand(uint8_t *data, int size);
     ErrorNumber_e sendCommandWithoutData(const uint8_t command, int size);
     ErrorNumber_e sendCommandSingleByte(const uint8_t command, const uint8_t payload, const bool blocking);
-    ErrorNumber_e sendCommandUint16(const uint8_t command, const uint16_t payload, const bool blocking);
+	ErrorNumber_e sendCommandUint16(const uint8_t command, const uint16_t payload, const bool blocking);
     ErrorNumber_e sendCommandInt16(const uint8_t command, const int16_t payload, bool blocking);
     ErrorNumber_e sendCommand2xUint16(const uint8_t command, const uint16_t payload0, const uint16_t payload1, const bool blocking);
 

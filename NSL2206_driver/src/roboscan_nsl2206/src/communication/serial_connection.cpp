@@ -155,20 +155,21 @@ ssize_t SerialConnection::sendData(uint8_t *data)
     data[0] = CommunicationConstants::Command::START_MARK;
 
     //Calculate the CRC    
-     uint32_t crc = calculateChecksum(data, (CommunicationConstants::Command::SIZE_TOTAL - sizeof(uint32_t)));
+    uint32_t crc = calculateChecksum(data, (CommunicationConstants::Command::SIZE_TOTAL - sizeof(uint32_t)));
 
     //Add it to the buffer123
     Util::setUint32LittleEndian(data, (CommunicationConstants::Command::SIZE_TOTAL - sizeof(uint32_t)), crc);
 
     //This is just to print out the data
+    /*
     std::string str= "SEND DATA: ";
-    char buf[4];
+	char buf[4];
     for(int i=0; i<14; i++){
         sprintf(buf, "%x ", data[i]);
         str.append(buf);
     }
+	*/
     //ROS_DEBUG_STREAM(str);
-
 
     return write(fileDescription, (uint8_t *)(data), CommunicationConstants::Command::SIZE_TOTAL);
 }
@@ -291,6 +292,7 @@ bool SerialConnection::processData(std::vector<uint8_t> &array, int rxSize)
 	//Check if the end marking is present. Only use the data if this is the case.
     if ( checksumIsCorrect(array, expectedSize) )
     {
+    
         uint8_t type = getType(array);
 
         //Remove the remaining: thats the checksum
@@ -302,7 +304,6 @@ bool SerialConnection::processData(std::vector<uint8_t> &array, int rxSize)
 		if( (type < 3 || type > 8) ){
 			if( array.size() > 0 ) printf("after size = %lu rxSize = %d at(0) = %x\n", array.size(), rxSize, array.at(0));
 		}
-
 		return true;
     }else{
         printf("-------- >>>> corrupted data <<< ---------\n");

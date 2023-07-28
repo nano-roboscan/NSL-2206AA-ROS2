@@ -260,9 +260,9 @@ ErrorNumber_e Communication::sendCommand(uint8_t *data, int size)
   int count = 0;
   //int totalSize = size;// > 0 ? size + CommunicationConstants::Data::SIZE_OVERHEAD : 0;
 
-  //std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now();;
+  //std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now();
   serialConnection->rxArray.clear();
-
+  
 for(int n= 0; n < size; n+= sz){
 	 sz = serialConnection->readRxData(size, true);
 	 if(sz == -1){
@@ -272,16 +272,16 @@ for(int n= 0; n < size; n+= sz){
 		count += sz;
 	 }
   }
+  
 
-
-  //std::chrono::time_point<std::chrono::system_clock> endTime = std::chrono::system_clock::now();;
+  //std::chrono::time_point<std::chrono::system_clock> endTime = std::chrono::system_clock::now();
    
    
   if( serialConnection->rxArray.size() > 0) serialConnection->processData(serialConnection->rxArray, size);
   else{
 	 printf("arr zero ~~\n");
   }
-
+  
   return ERROR_NUMMBER_NO_ERROR;
 }
 
@@ -328,9 +328,11 @@ ErrorNumber_e Communication::sendCommandSingleByte(const uint8_t command, const 
 
 	//Add the single byte at the first position
 	output[CommunicationConstants::Command::INDEX_DATA] = payload;
-
+	
 	return sendCommand(output, CommunicationConstants::Command::SIZE_PAYLOAD);
 }
+
+
 
 /**
  * @brief Send 16bit / 2byte command
@@ -1089,6 +1091,14 @@ ErrorNumber_e Communication::setModulationFrequency(const ModulationFrequency_e 
 
   return status;
 }
+
+//hdr(win)
+ErrorNumber_e Communication::setHdr(const uint8_t hdr)
+{
+	return sendCommandSingleByte(CommunicationConstants::CommandList::COMMAND_SET_HDR, hdr, false);
+}
+
+
 
 /**
  * @brief Set the filter settings

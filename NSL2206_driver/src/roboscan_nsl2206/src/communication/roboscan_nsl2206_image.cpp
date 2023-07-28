@@ -6,6 +6,8 @@ using namespace std;
 namespace ComLib
 {
 
+static const unsigned int NUM_INTEGRATION_TIME_WF = 4;
+
 using namespace CommunicationConstants::Nsl2206Header;
 
 
@@ -94,10 +96,22 @@ bool HeaderFlags::getAutoIntegrationTimeEnabled() const
   return autoIntegrationTimeEnabled;
 }
 
+
 bool HeaderFlags::getDcsFilterEnabled() const
 {
   return averageFilterEnabled;
 }
+
+bool HeaderFlags::getTemporalHdrEnabled() const
+{
+    return temporalHdrEnabled;
+}
+
+bool HeaderFlags::getSpatialHdrEnabled() const
+{
+    return spatialHdrEnabled;
+}
+
 
 bool HeaderFlags::getGaussianFilterEnabled() const
 {
@@ -115,6 +129,23 @@ Nsl2206Image::Nsl2206Image(const vector<uint8_t> &data)
 
   extractData(this->data);
 }
+
+Nsl2206Image::~Nsl2206Image()
+{
+  
+}
+
+std::vector<uint8_t> &Nsl2206Image::getRawData()
+{
+	return data;
+}
+
+
+void Nsl2206Image::changePixel(Nsl2206Image &imageSource , const unsigned int index )
+{
+
+}
+
 
 Nsl2206Image::Nsl2206BeamType_e Nsl2206Image::extractBeamType(const unsigned int value)
 {
@@ -315,6 +346,24 @@ unsigned int Nsl2206Image::getIntegrationTime3d(const unsigned int index) const
 
   return integrationTime3d[index];
 }
+
+unsigned int Nsl2206Image::getNumIntegrationTimeUsed() const
+{
+    unsigned int numIntegrationTime = 0;
+
+    //Search for the first interation time not zero
+    for (unsigned int i = 0; i < NUM_INTEGRATION_TIME_WF; i++)
+    {
+        if (integrationTime3d[i] == 0)
+        {
+            break;
+        }
+        numIntegrationTime++;
+    }
+
+    return numIntegrationTime;
+}
+
 
 unsigned int Nsl2206Image::getAmplitudeLimit(int index) const
 {

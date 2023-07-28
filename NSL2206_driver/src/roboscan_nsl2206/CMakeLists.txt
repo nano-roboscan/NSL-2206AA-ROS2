@@ -68,6 +68,7 @@ add_executable(roboscan_publish_node
                 src/communication/u16_helper.cpp
                 src/communication/update_controller.cpp
                 src/communication/util.cpp
+                src/communication/HdrHandler.cpp
                 src/communication/roboscan_nsl2206_image.cpp
                 src/communication/roboscan_nsl2206_grayscale_image.cpp
                 src/communication/roboscan_nsl2206_distance_image.cpp
