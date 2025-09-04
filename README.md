@@ -29,15 +29,14 @@ $ ros2 launch roboscan_nsl2206 camera.Launch.py
 ```
 
 # NSL-2206AA View
-
+<img width="328" height="178" alt="Image" src="https://github.com/user-attachments/assets/164554e8-cbea-4fa3-93c0-419a71e8fec5" />
+<img width="868" height="703" alt="Image" src="https://github.com/user-attachments/assets/4e14e996-a96c-454e-97cf-cf37c407a299" />
 
 # Set parameters
 ```
 $ rqt
  (reconfigure)
 ```
-
-
 
 ```
 cvShow : Image Viewer on/off
