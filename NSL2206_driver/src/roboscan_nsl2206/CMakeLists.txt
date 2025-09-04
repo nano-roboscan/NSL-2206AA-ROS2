@@ -1,4 +1,11 @@
 cmake_minimum_required(VERSION 3.8)
+
+if(POLICY CMP0074)
+  # Warning: Policy CMP0074 is not set: find_package uses <PackageName>_ROOT variables.
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
+
 project(roboscan_nsl2206)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -10,31 +17,41 @@ find_package(ament_cmake REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
-# find_package(camera_info_manager REQUIRED COMPONENTS)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(PCL REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 find_package(pcl_conversions REQUIRED)
 find_package(sensor_msgs REQUIRED)
-#find_package(Eigen REQUIRED)
+#find_package(Eigen REQUIRED) 
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(rviz_common REQUIRED)
 find_package(rviz_ogre_vendor REQUIRED)
 find_package(cv_bridge)
 
-find_package(image_transport)
+find_package(image_transport REQUIRED)
 find_package(nav_msgs)
 find_package(std_msgs)
 
 find_package(eigen3_cmake_module REQUIRED)
-find_package(Eigen3)
+find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(OpenCV REQUIRED)
-find_package(PCL REQUIRED COMPONENTS common io)
+#find_package(PCL REQUIRED COMPONENTS common io)
+find_package(PCL REQUIRED COMPONENTS common)
 
+# nanosystems library 
+find_path(NSL_LIB_INCLUDE_DIR NAMES nanolib.h PATHS nsl_lib/include REQUIRED)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+find_library(NSL_LIB_PATH NAMES nanolib PATHS nsl_lib/lib/aarch-7.5/shared REQUIRED)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+find_library(NSL_LIB_PATH NAMES nanolib PATHS nsl_lib/lib/linux-7.5/shared REQUIRED)
+endif()
+
+get_filename_component(NSL_LIB_DIR ${NSL_LIB_PATH} DIRECTORY)
 
 link_directories(${PCL_LIBRARY_DIRS})
 #add_definition($PCL_DEFINITIONS})
@@ -42,44 +59,18 @@ link_directories(${PCL_LIBRARY_DIRS})
 include_directories(include/ 
 ${PCL_INCLUDE_DIRS} 
 ${Boost_INCLUDE_DIRS} 
-${OpenCV_INCLUDE_DIRS}
-${Eigen_INCLUDE_DIRS})
-
-include_directories(
-  include
-  include/communication  
-  ${ament_cmake_INCLUDE_DIRS}
-)
+${OpenCV_INCLUDE_DIRS} 
+${NSL_LIB_INCLUDE_DIR})
 
 
 
 # Build
-add_executable(roboscan_publish_node
-                src/roboscan_publish_node.cpp
-                #src/camera2206_driver.cpp
-                src/communication/blocking_command_helper.cpp
-                src/communication/chip_information_helper.cpp
-                src/communication/communication.cpp
-                src/communication/communication_2206.cpp
-                src/communication/crc_calc.cpp
-                src/communication/production_information_helper.cpp
-                src/communication/serial_connection.cpp
-                src/communication/u32_helper.cpp
-                src/communication/u16_helper.cpp
-                src/communication/update_controller.cpp
-                src/communication/util.cpp
-                src/communication/HdrHandler.cpp
-                src/communication/roboscan_nsl2206_image.cpp
-                src/communication/roboscan_nsl2206_grayscale_image.cpp
-                src/communication/roboscan_nsl2206_distance_image.cpp
-                src/communication/roboscan_nsl2206_distance_amplitude_image.cpp
-                src/communication/roboscan_nsl2206_distance_grayscale_image.cpp
-                src/communication/camera_calibration
-               )
+add_executable(roboscan_publish_node src/roboscan_publish_node.cpp)
                                 
 target_include_directories(roboscan_publish_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+  
 target_compile_features(roboscan_publish_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
 
@@ -91,12 +82,23 @@ ament_target_dependencies(roboscan_publish_node
   pcl_conversions
   Eigen3
   OpenCV
+  image_transport
 )
 
 target_link_libraries(roboscan_publish_node 
 ${PCL_LIBRARIES}
 ${Boost_SYSTEM_LIBRARY}
-${Boost_LIBRARIES})
+${Boost_LIBRARIES}
+${NSL_LIB_PATH}
+yaml-cpp
+Eigen3::Eigen
+)
+
+# 런타임 시 .so 찾도록 RPATH 설정
+set_target_properties(roboscan_publish_node PROPERTIES
+  BUILD_RPATH "${NSL_LIB_DIR}"
+  INSTALL_RPATH "${NSL_LIB_DIR}"
+)
 
 install(TARGETS roboscan_publish_node
   DESTINATION lib/${PROJECT_NAME})
