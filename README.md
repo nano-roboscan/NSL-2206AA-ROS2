@@ -16,7 +16,8 @@ $ service udev restart
 
 2. Build NSL-2206AA demo
 ```
-$ cd NSL2206_driver
+$ git clone --recurse-submodules https://github.com/nano-roboscan/NSL-2206AA-ROS2.git
+$ cd NSL-2206AA-ROS2/NSL2206_driver
 $ colcon build --packages-select roboscan_nsl2206
 $ . install/setup.bash
 ```
