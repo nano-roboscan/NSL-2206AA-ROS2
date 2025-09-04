@@ -123,6 +123,14 @@ void roboscanPublisher::initNslLibrary()
 		return;
 	}
 
+	nslConfig.medianOpt = NslOption::FUNCTION_OPTIONS::FUNC_ON;
+	nslConfig.gaussOpt = NslOption::FUNCTION_OPTIONS::FUNC_ON;
+	nslConfig.temporalFactorValue = 300;
+	nslConfig.temporalThresholdValue = 200;
+	nslConfig.edgeThresholdValue = 100;
+	nslConfig.interferenceDetectionLimitValue = 0;
+	nslConfig.interferenceDetectionLastValueOpt = NslOption::FUNCTION_OPTIONS::FUNC_ON;
+	
 	nsl_setFilter(nsl_handle, nslConfig.medianOpt, nslConfig.gaussOpt, nslConfig.temporalFactorValue, nslConfig.temporalThresholdValue, nslConfig.edgeThresholdValue, nslConfig.interferenceDetectionLimitValue, nslConfig.interferenceDetectionLastValueOpt);
 	nsl_setColorRange(viewerParam.maxDistance, MAX_GRAYSCALE_VALUE, viewerParam.grayScale ? NslOption::FUNCTION_OPTIONS::FUNC_ON : NslOption::FUNCTION_OPTIONS::FUNC_OFF);
 	startStreaming();
@@ -157,6 +165,7 @@ void roboscanPublisher::threadCallback()
 			frameCount = 0;
 			lastTime = now;
 			//RCLCPP_INFO(this->get_logger(), "frame = %d fps\n", viewerParam.frameCount);
+			printf("frame = %d fps\r\n", viewerParam.frameCount);
 		}
 		
 	}
