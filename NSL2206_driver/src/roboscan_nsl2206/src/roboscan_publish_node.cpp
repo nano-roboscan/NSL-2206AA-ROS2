@@ -132,6 +132,7 @@ void roboscanPublisher::initNslLibrary()
 	nslConfig.interferenceDetectionLastValueOpt = NslOption::FUNCTION_OPTIONS::FUNC_ON;
 	
 	nsl_setFilter(nsl_handle, nslConfig.medianOpt, nslConfig.gaussOpt, nslConfig.temporalFactorValue, nslConfig.temporalThresholdValue, nslConfig.edgeThresholdValue, nslConfig.interferenceDetectionLimitValue, nslConfig.interferenceDetectionLastValueOpt);
+	nsl_set3DFilter(nsl_handle, viewerParam.pointCloudEdgeThreshold);
 	nsl_setColorRange(viewerParam.maxDistance, MAX_GRAYSCALE_VALUE, viewerParam.grayScale ? NslOption::FUNCTION_OPTIONS::FUNC_ON : NslOption::FUNCTION_OPTIONS::FUNC_OFF);
 	startStreaming();
 
@@ -496,7 +497,7 @@ void roboscanPublisher::setReconfigure()
 		nsl_setIntegrationTime(nsl_handle, nslConfig.integrationTime3D[0], nslConfig.integrationTime3D[1], nslConfig.integrationTime3D[2], nslConfig.integrationTime3D[3], nslConfig.integrationTimeGrayScale);
 		nsl_setHdrMode(nsl_handle, nslConfig.hdrOpt);
 		nsl_setFilter(nsl_handle, nslConfig.medianOpt, nslConfig.gaussOpt, nslConfig.temporalFactorValue, nslConfig.temporalThresholdValue, nslConfig.edgeThresholdValue, nslConfig.interferenceDetectionLimitValue, nslConfig.interferenceDetectionLastValueOpt);
-//		nsl_set3DFilter(nsl_handle, viewerParam.pointCloudEdgeThreshold);
+		nsl_set3DFilter(nsl_handle, viewerParam.pointCloudEdgeThreshold);
 		nsl_setModulation(nsl_handle, nslConfig.mod_frequencyOpt, nslConfig.mod_channelOpt);
 		nsl_setRoi(nsl_handle, nslConfig.roiXMin, nslConfig.roiYMin, nslConfig.roiXMax, nslConfig.roiYMax);
 		
