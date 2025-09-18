@@ -18,15 +18,13 @@ $ service udev restart
 ```
 $ git clone --recurse-submodules https://github.com/nano-roboscan/NSL-2206AA-ROS2.git
 $ cd NSL-2206AA-ROS2/NSL2206_driver
-$ colcon build --packages-select roboscan_nsl2206
+$ colcon build
 $ . install/setup.bash
 ```
  
 3. Start commands
 ```
-$ ros2 run roboscan_nsl2206 roboscan_publish_node
 $ ros2 launch roboscan_nsl2206 camera.Launch.py
-
 ```
 
 # NSL-2206AA View
@@ -37,24 +35,6 @@ $ ros2 launch roboscan_nsl2206 camera.Launch.py
 ```
 $ rqt
  (reconfigure)
-```
-
-```
-cvShow : Image Viewer on/off
-
-imageType 1 : Distance 
-
-imageType 2 : Distance / Amplitude
-
-integrationTime0 = 0 ~ 1000(VCSEL)
-
-integrationTime0 = 0 ~ 2000
-
-modIndex 0 : 10MHz
-
-modIndex 1 : 20MHz
-
-transformAngle : angle (rviz-based y-axis rotation)
 ```
 
  
