@@ -28,14 +28,9 @@ $ ros2 launch roboscan_nsl2206 camera.Launch.py
 ```
 
 # NSL-2206AA View
-<img width="328" height="178" alt="Image" src="https://github.com/user-attachments/assets/164554e8-cbea-4fa3-93c0-419a71e8fec5" />
-<img width="868" height="703" alt="Image" src="https://github.com/user-attachments/assets/4e14e996-a96c-454e-97cf-cf37c407a299" />
+<img width="1280" height="355" alt="Image" src="https://github.com/user-attachments/assets/66f76163-5e29-4a2b-8480-3c55dbcb1176" />
 
-# Set parameters
-```
-$ rqt
- (reconfigure)
-```
+<img width="1026" height="928" alt="Image" src="https://github.com/user-attachments/assets/cb43e67b-80d8-45f3-80dc-fe580951443c" />
 
  
 
