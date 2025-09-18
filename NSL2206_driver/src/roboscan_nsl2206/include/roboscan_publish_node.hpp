@@ -72,7 +72,6 @@ namespace nanosys {
 
 		rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgDistancePub;
 		rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgAmplPub;
-		rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr imgGrayPub;
 		rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloudPub;
 
 #ifdef image_transfer_function
@@ -88,14 +87,42 @@ namespace nanosys {
 		int 			nsl_handle;
 	private:
 		std::string yaml_path_;
+		
+		const std::unordered_map<int, std::string> modeIntMap = {
+			{1, "DISTANCE"},
+			{2, "DISTANCE_AMPLITUDE"},
+		};
+
+		const std::unordered_map<int, std::string> hdrIntMap = {
+		    {0, "HDR_None"},
+		    {1, "HDR_Spatial"},
+			{2, "HDR_Temporal"}
+		};			
+
+		const std::unordered_map<int, std::string> modulationIntMap = {
+		    {0, "MOD_10Mhz"},
+		    {1, "MOD_20Mhz"},
+		};
 	
+		const std::unordered_map<std::string, int> modeStrMap = {
+			{"DISTANCE", 1},
+			{"DISTANCE_AMPLITUDE", 2},
+		};
+
+		const std::unordered_map<std::string, int> hdrStrMap = {
+		    {"HDR_None", 0},
+		    {"HDR_Spatial", 1},
+			{"HDR_Temporal", 2}
+		};	
+
+		const std::unordered_map<std::string, int> modulationStrMap = {
+		    {"MOD_10Mhz", 0},
+		    {"MOD_20Mhz", 1},
+		};
+
 		// load yaml
 		void load_params()
 		{
-			const std::unordered_map<std::string, int> modeMap = {
-			    {"DISTANCE", 1},
-				{"DISTANCE_AMPLITUDE", 2},
-			};
 
 			RCLCPP_INFO(this->get_logger(),"Loaded params: path=%s\n", yaml_path_.c_str());
 			
@@ -103,12 +130,12 @@ namespace nanosys {
 			{
 				YAML::Node config = YAML::LoadFile(yaml_path_);
 				viewerParam.devName = config["devName"] ? config["devName"].as<std::string>() : "/dev/ttyNsl2206";
-				viewerParam.frame_id = config["FrameID"] ? config["FrameID"].as<std::string>() : "roboscan_frame";
+				viewerParam.frame_id = config["FrameID"] ? config["FrameID"].as<std::string>() : "roboscan_nsl2206_frame";
 				viewerParam.maxDistance = config["MaxDistance"] ? config["MaxDistance"].as<int>() : 12500;
 				viewerParam.pointCloudEdgeThreshold = config["PointColud EDGE"] ? config["PointColud EDGE"].as<int>() : 200;
 				std::string tmpModeStr = config["ImageType"] ? config["ImageType"].as<std::string>() : "DISTANCE_AMPLITUDE";
-				auto itMode = modeMap.find(tmpModeStr);
-				viewerParam.imageType = (itMode != modeMap.end()) ? itMode->second : 3; // defeault DISTANCE_AMPLITUDE
+				auto itMode = modeStrMap.find(tmpModeStr);
+				viewerParam.imageType = (itMode != modeStrMap.end()) ? itMode->second : 2; // defeault DISTANCE_AMPLITUDE
 				
 				viewerParam.lidarAngleV = config["LidarAngleV"] ? config["LidarAngleV"].as<double>() : 0;
 				viewerParam.lidarAngleH = config["LidarAngleH"] ? config["LidarAngleH"].as<double>() : 0;
@@ -123,20 +150,12 @@ namespace nanosys {
 	    // save yaml
 	    void save_params()
 	    {
-		    const std::unordered_map<int, std::string> modeMap = {
-		        {1, "DISTANCE"},
-				{2, "DISTANCE_AMPLITUDE"},
-		    };
-
-			int imgType = this->get_parameter("C. imageType").as_int();
-			if( imgType < 1 || imgType > 2 ) imgType = 2; // default DISTANCE_AMPLITUDE
-			
 	        std::ofstream fout(yaml_path_);
 	        fout << "devName: " << this->get_parameter("0. devName").as_string() << "\n";
 	        fout << "FrameID: " << this->get_parameter("Q. frameID").as_string() << "\n";
 	        fout << "MaxDistance: " << this->get_parameter("Z. MaxDistance").as_int() << "\n";
 	        fout << "PointColud EDGE: " << this->get_parameter("Y. PointColud EDGE").as_int() << "\n";
-			fout << "ImageType: " << modeMap.at(imgType) << "\n";
+			fout << "ImageType: " << this->get_parameter("C. imageType").as_string() << "\n";
 	        fout << "LidarAngleV: " << this->get_parameter("P. transformAngleV").as_double() << "\n";
 	        fout << "LidarAngleH: " << this->get_parameter("P. transformAngleH").as_double() << "\n";
 
@@ -149,10 +168,12 @@ namespace nanosys {
 		void timeDelay(int milli);
 		void renewParameter();
 		void getMouseEvent( int &mouse_xpos, int &mouse_ypos );
-		cv::Mat addDistanceInfo(cv::Mat distMat, NslPCD *frame);
+		cv::Mat addDistanceInfo(cv::Mat distMat, NslPCD *ptNslPCD, int lidarWidth, int lidarHeight);
 		void setWinName();
 		void paramDump(const std::string & filename);
 		void paramLoad();
+		rcl_interfaces::msg::ParameterDescriptor create_Slider(const std::string &description,int from, int to, int step);
+		rcl_interfaces::msg::ParameterDescriptor create_Slider(const std::string &description, double from, double to, double step);
 
 		OnSetParametersCallbackHandle::SharedPtr callback_handle_;
 		rcl_interfaces::msg::SetParametersResult parametersCallback( const std::vector<rclcpp::Parameter> &parameters);

@@ -20,27 +20,35 @@ def generate_launch_description():
 
     params = [param_path] if os.path.exists(param_path) else []
 
-    roboscan_publish_node = Node(
+    roboscan_nsl2206_publish_node = Node(
         package='roboscan_nsl2206',
-        executable='roboscan_publish_node',
+        executable='roboscan_nsl2206_publish_node',
         output='screen',
         parameters=params if params else None
         )
  
+    rviz_config = os.path.join(
+        os.getcwd(),
+        'src',
+        'roboscan_nsl2206',
+        'rviz',
+        'roboscan_nsl2206rviz.rviz'
+    )
  
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        arguments=['-d' + os.path.join(get_package_share_directory('roboscan_nsl2206'), 'rviz', 'roboscan_nsl2206rviz.rviz')],output='screen')
+        arguments=['-d' + rviz_config],
+        output='screen')
 
     rqt_node = ExecuteProcess(
-        cmd=['ros2', 'run', 'rqt_gui', 'rqt_gui'],
+        cmd=['ros2', 'run', 'rqt_gui', 'rqt_gui', '--force-discover', '-s', 'rqt_reconfigure_combo'],
         output='screen')
 
 
-    launch_description.add_action(rviz_node)
+    #launch_description.add_action(rviz_node)
     launch_description.add_action(rqt_node)
-    launch_description.add_action(roboscan_publish_node)
+    launch_description.add_action(roboscan_nsl2206_publish_node)
 
     return launch_description

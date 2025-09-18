@@ -65,16 +65,16 @@ ${NSL_LIB_INCLUDE_DIR})
 
 
 # Build
-add_executable(roboscan_publish_node src/roboscan_publish_node.cpp)
+add_executable(roboscan_nsl2206_publish_node src/roboscan_publish_node.cpp)
                                 
-target_include_directories(roboscan_publish_node PUBLIC
+target_include_directories(roboscan_nsl2206_publish_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
   
-target_compile_features(roboscan_publish_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
+target_compile_features(roboscan_nsl2206_publish_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
 
-ament_target_dependencies(roboscan_publish_node
+ament_target_dependencies(roboscan_nsl2206_publish_node
   sensor_msgs
   rclcpp
   std_msgs
@@ -85,7 +85,7 @@ ament_target_dependencies(roboscan_publish_node
   image_transport
 )
 
-target_link_libraries(roboscan_publish_node 
+target_link_libraries(roboscan_nsl2206_publish_node 
 ${PCL_LIBRARIES}
 ${Boost_SYSTEM_LIBRARY}
 ${Boost_LIBRARIES}
@@ -95,12 +95,12 @@ Eigen3::Eigen
 )
 
 # 런타임 시 .so 찾도록 RPATH 설정
-set_target_properties(roboscan_publish_node PROPERTIES
+set_target_properties(roboscan_nsl2206_publish_node PROPERTIES
   BUILD_RPATH "${NSL_LIB_DIR}"
   INSTALL_RPATH "${NSL_LIB_DIR}"
 )
 
-install(TARGETS roboscan_publish_node
+install(TARGETS roboscan_nsl2206_publish_node
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch
