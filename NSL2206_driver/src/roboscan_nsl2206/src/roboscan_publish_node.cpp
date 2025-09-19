@@ -603,24 +603,24 @@ void roboscanPublisher::initialise()
 	this->declare_parameter<string>("C. imageType", modeIntMap.at(viewerParam.imageType));
 	this->declare_parameter<string>("D. hdr_mode", hdrIntMap.at(static_cast<int>(nslConfig.hdrOpt)));
 	
-	auto int_0 = create_Slider("Defaut integration time", 0, 2000, 10);
+	auto int_0 = create_Slider("Defaut integration time", 0, 2000, 1);
 	this->declare_parameter<int>("E. int0", nslConfig.integrationTime3D[0], int_0);
-	auto int_1 = create_Slider("HDR integration time1", 0, 2000, 10);
+	auto int_1 = create_Slider("HDR integration time1", 0, 2000, 1);
 	this->declare_parameter<int>("F. int1", nslConfig.integrationTime3D[1], int_1);
-	auto int_2 = create_Slider("HDR integration time2", 0, 2000, 10);
+	auto int_2 = create_Slider("HDR integration time2", 0, 2000, 1);
 	this->declare_parameter<int>("G. int2", nslConfig.integrationTime3D[2], int_2);
-	auto int_3 = create_Slider("HDR integration time3", 0, 2000, 10);
+	auto int_3 = create_Slider("HDR integration time3", 0, 2000, 1);
 	this->declare_parameter<int>("G. int3", nslConfig.integrationTime3D[3], int_3);
-	auto int_Gr = create_Slider("Grayscale time", 0, 10000, 10);	
+	auto int_Gr = create_Slider("Grayscale time", 0, 10000, 1);	
 	this->declare_parameter<int>("H. intGr",nslConfig.integrationTimeGrayScale, int_Gr);
 	
-	auto min_Amplitude0 = create_Slider("minimum Amplitude 0", 0, 1000, 10);
+	auto min_Amplitude0 = create_Slider("minimum Amplitude 0", 0, 1000, 1);
 	this->declare_parameter<int>("I. minAmplitude0", nslConfig.minAmplitude[0], min_Amplitude0);
-	auto min_Amplitude1 = create_Slider("minimum Amplitude 1", 0, 1000, 10);
+	auto min_Amplitude1 = create_Slider("minimum Amplitude 1", 0, 1000, 1);
 	this->declare_parameter<int>("I. minAmplitude1", nslConfig.minAmplitude[1], min_Amplitude1);
-	auto min_Amplitude2 = create_Slider("minimum Amplitude 2", 0, 1000, 10);
+	auto min_Amplitude2 = create_Slider("minimum Amplitude 2", 0, 1000, 1);
 	this->declare_parameter<int>("I. minAmplitude2", nslConfig.minAmplitude[2], min_Amplitude2);
-	auto min_Amplitude3 = create_Slider("minimum Amplitude 3", 0, 1000, 10);
+	auto min_Amplitude3 = create_Slider("minimum Amplitude 3", 0, 1000, 1);
 	this->declare_parameter<int>("I. minAmplitude3", nslConfig.minAmplitude[3], min_Amplitude3);
 	this->declare_parameter<string>("J. modIndex", modulationIntMap.at(static_cast<int>(nslConfig.mod_frequencyOpt)));
 	auto channelOpt = create_Slider("Channel", 0, 15, 1);
