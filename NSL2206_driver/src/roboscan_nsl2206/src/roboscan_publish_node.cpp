@@ -34,8 +34,6 @@ using namespace cv;
 using namespace std;
 
 #define WIN_NAME "NSL-2206AA IMAGE"
-#define MAX_LEVELS  	9
-#define NUM_COLORS     	30000
 
 #define DISTANCE_INFO_HEIGHT	80
 #define VIEWER_SCALE_SIZE		4
@@ -141,7 +139,7 @@ void roboscanPublisher::threadCallback()
 			setReconfigure();
 		}
 
-		if( nsl_getPointCloudData(nsl_handle, latestFrame.get()) == NSL_ERROR_TYPE::NSL_SUCCESS )
+		if( nsl_getPointCloudData(nsl_handle, latestFrame.get(), 0) == NSL_ERROR_TYPE::NSL_SUCCESS )
 		{
 			frameCount++;		
 			publishFrame(latestFrame.get());
